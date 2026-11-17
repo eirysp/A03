@@ -1,8 +1,8 @@
-# create_and_run_gci.py (copy of create_and_run_sims.py): one OpenFOAM run for each set of parameters of a study.
+## create_and_run_sims.py: one OpenFOAM run for each set of parameters of a study.
 #
 # Run it from the A03 folder, in a terminal where OpenFOAM is loaded:
 #     cd ~/openfoam/A03
-#     python scripts/create_and_run_gci.py
+#     python scripts/create_and_run_sims.py
 #
 # Each run is a copy of Case 1 (templates/A03_stokes_wave), in its own folder
 # runs/<study>/<name>, and differs from it only in the parameters given below.
@@ -20,21 +20,18 @@ import subprocess
 
 import progress   # scripts/progress.py: the progress bar of each run
 
-# ============================================================================
+ ============================================================================
 # EDIT THESE LINES for each study (in your copy of this script):
 #   - study: the folder runs/<study> that the runs go into;
 #   - runs: one line per run, its name and the parameters that it changes.
 # ============================================================================
-study = "gci"                  # the runs go into runs/<study>/<name>
+study = "gci"
 
-# name of the run: the parameters (in the file parameters) that it changes
-# (Task 2(b): r = 2 in every direction; maxCo stays 0.1, as in the template)
 runs = {
-    "nx050": {"nx": 50, "nzBand": 14, "nzBed": 6, "nzAir": 4},     # grid 3, coarse
-    "nx100": {"nx": 100, "nzBand": 28, "nzBed": 12, "nzAir": 8},   # grid 2 = the template
-    "nx200": {"nx": 200, "nzBand": 56, "nzBed": 24, "nzAir": 16},  # grid 1, fine (slowest)
+    "nx050": {"nx": 50, "nzBand": 14, "nzBed": 6, "nzAir": 4},
+    "nx100": {"nx": 100, "nzBand": 28, "nzBed": 12, "nzAir": 8},
+    "nx200": {"nx": 200, "nzBand": 56, "nzBed": 24, "nzAir": 16},
 }
-
 # ============================================================================
 # END OF THE LINES TO EDIT
 # ============================================================================
