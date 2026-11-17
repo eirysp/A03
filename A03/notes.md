@@ -99,3 +99,41 @@ Initial observation:
 - The CFD crest is higher and sharper than the Airy crest.
 - The CFD trough is shallower than the Airy trough.
 - The non-zero A2-A5 harmonics show the nonlinear wave shape that Airy theory cannot represent.
+
+### Task 1(d) — Features not reproduced by Airy theory
+
+Airy theory fails to reproduce the nonlinear asymmetry of the CFD wave. The CFD has a sharper, higher crest and a flatter, shallower trough, whereas Airy theory produces a sinusoidal wave with equal-magnitude crest and trough elevations.
+
+Airy theory contains only the first harmonic, so it cannot represent the higher-harmonic contributions that produce the nonlinear wave shape. In the CFD results, the harmonic amplitudes were:
+
+- A1 = 2.3509 m
+- A2 = 0.3871 m
+- A3 = 0.0897 m
+- A4 = 0.0337 m
+- A5 = 0.0137 m
+
+The non-zero second-, third-, fourth- and fifth-harmonic amplitudes sharpen the crest and modify the trough. Airy theory predicts A2 = A3 = A4 = A5 = 0.
+
+At the end of the simulation, the CFD crest elevation was 2.8523 m and the trough elevation was -2.0384 m. Airy theory predicted a crest of 2.5000 m and a trough of -2.5000 m. Therefore, Airy theory underestimates the crest elevation and predicts a trough that is too deep.
+
+Airy theory also predicts an incorrect phase speed. The CFD phase speed was 9.2640 m/s, while the Airy phase speed was 8.8190 m/s. The Airy wave therefore travels more slowly and increasingly lags behind the CFD wave.
+
+At t = 27.015 s, the phase-speed difference was approximately:
+
+c_CFD - c_Airy = 9.2640 - 8.8190 = 0.445 m/s
+
+The accumulated phase lag was approximately:
+
+(0.445)(27.015) = 12.0 m
+
+This explains the negative gradient of the Airy curve in the x_crest - c_V t plot and its large displacement from the CFD curve in the final free-surface comparison. The displacement is accumulated phase error caused by the lower Airy phase speed, not a numerical delay in the CFD.
+
+Overall, Airy theory does not reproduce the nonlinear crest and trough shape, the higher harmonics, or the correct phase speed. Stokes V gives the closest comparison with the CFD.
+
+### Task 1(c) — Harmonic history
+
+The harmonic amplitudes are not all steady during the simulation. A1 remains approximately constant and A2 shows relatively small variation. A3 varies more noticeably, while A4 has a small mean magnitude compared with A1 but shows strong fluctuations.
+
+The wave-history figure plots A1 to A4 only; A5 is not included in this figure. However, the final-value table from plotWave.py gives A5 = 0.0137 m. This is much smaller than A1 = 2.3509 m, so the fifth harmonic makes only a small contribution to the overall wave shape.
+
+The wave height also changes slightly during the run, decreasing from H0 = 4.99405 m initially to Hend = 4.89073 m at the end. The fluctuations in the higher harmonics and the small reduction in wave height indicate some numerical evolution of the initially prescribed wave during propagation.
