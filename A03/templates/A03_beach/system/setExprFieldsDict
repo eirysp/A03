@@ -1,0 +1,32 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     |
+    \\  /    A nd           | Waves on a sloping beach (A03)
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      setExprFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Still water: alpha.water = 1 below z = 0, 0 above (the cells that the
+// still-water level cuts get the fraction of their height below z = 0)
+
+#include "../parameters"
+
+expressions
+(
+    alpha
+    {
+        field       alpha.water;
+        dz          $dzBand;
+        expression  #{ max(0, min(1, 0.5 - pos().z()/$[dz])) #};
+    }
+);
+
+// ************************************************************************* //

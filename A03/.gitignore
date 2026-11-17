@@ -1,0 +1,19 @@
+# Files that git should ignore: the large results that Allrun regenerates
+# (0/ is made again from 0.orig/ by every run, and waveCoeffs by stokesV.py).
+# (The scripts, the CSV files, the figures, your notes and the set-up files of
+# every case and run are still committed.) Name your run folders so that they
+# do not start with a digit: folders such as 1/ or 250/ are results.
+[1-9]*/
+0/
+0.[0-9]*/
+**/constant/polyMesh/
+processor*/
+postProcessing/
+log.*
+*.foam
+waveCoeffs
+# animations made by scripts/animate.py (make them again from the run)
+*.avi
+*.ogv
+*.[0-9][0-9][0-9][0-9].png
+__pycache__/

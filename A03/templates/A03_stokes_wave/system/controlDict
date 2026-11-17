@@ -1,0 +1,69 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     |
+    \\  /    A nd           | Stokes wave in a periodic domain (A03)
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "../parameters"
+
+application     interFoam;
+
+startFrom       startTime;
+startTime       0;
+stopAt          endTime;
+endTime         $endTime;            // nPeriods wave periods
+
+deltaT          1e-4;                // first time step; then set by maxCo
+adjustTimeStep  yes;
+maxCo           $maxCo;
+maxAlphaCo      $maxCo;
+maxDeltaT       #eval{ $T/100 };
+
+writeControl    adjustable;          // write exactly every writeInterval
+writeInterval   $writeInterval;      // T / writePerPeriod
+purgeWrite      0;
+writeFormat     binary;
+writePrecision  8;
+writeCompression off;
+timeFormat      general;
+timePrecision   8;
+runTimeModifiable yes;
+
+// Measurements at every time step, in postProcessing/
+functions
+{
+    // The free surface (alpha.water = 0.5) as a line of points (x, y, z = eta),
+    // 40 times per period: postProcessing/freeSurface/<time>/alpha.water_freeSurface.raw
+    freeSurface
+    {
+        type            surfaces;
+        libs            (sampling);
+        writeControl    adjustableRunTime;
+        writeInterval   #eval{ $T/40 };
+        surfaceFormat   raw;
+        fields          (alpha.water);
+        interpolationScheme cellPoint;
+        surfaces
+        {
+            freeSurface
+            {
+                type        isoSurface;
+                isoField    alpha.water;
+                isoValue    0.5;
+                interpolate true;
+            }
+        }
+    }
+}
+
+// ************************************************************************* //

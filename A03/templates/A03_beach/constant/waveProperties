@@ -1,0 +1,38 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     |
+    \\  /    A nd           | Waves on a sloping beach (A03)
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      waveProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "../parameters"
+
+inlet
+{
+    alpha           alpha.water;
+    waveModel       StokesV;        // fifth-order Stokes wave
+    nPaddle         1;
+    waveHeight      $Hpaddle;       // [m]: input height, tuned (see parameters)
+    wavePeriod      $T;             // [s]
+    waveAngle       0.0;            // propagates in +x
+    rampTime        $rampTime;      // [s]
+    activeAbsorption yes;           // absorbs the waves reflected back to the wavemaker
+}
+
+outlet
+{
+    alpha           alpha.water;
+    waveModel       shallowWaterAbsorption;     // absorbs the waves that reach the outlet
+    nPaddle         1;
+}
+
+// ************************************************************************* //

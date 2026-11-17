@@ -1,0 +1,72 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     |
+    \\  /    A nd           | Stokes wave in a periodic domain (A03)
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      setExprFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// The initial wave (t = 0): water fraction alpha.water and velocity U.
+// The amplitudes A1-A5 (eta) and U1-U5 (velocity) of the harmonics are in
+// waveCoeffs (from stokesV.py), for the initialWave chosen in parameters.
+
+#include "../parameters"
+
+_wave
+{
+    // constants used in the expressions below, as $[name]
+    k       $k;
+    d       $d;
+    A1      $A1;
+    A2      $A2;
+    A3      $A3;
+    A4      $A4;
+    A5      $A5;
+    U1      $U1;
+    U2      $U2;
+    U3      $U3;
+    U4      $U4;
+    U5      $U5;
+    dzBand  $dzBand;
+
+    variables
+    (
+        "kx = $[k]*pos().x()"
+        "kb = $[k]*(pos().z() + $[d])"      // k times the height above the bed
+        "eta = $[A1]*cos(kx) + $[A2]*cos(2*kx) + $[A3]*cos(3*kx) + $[A4]*cos(4*kx) + $[A5]*cos(5*kx)"
+        // fraction of the cell below eta (cells of height dzBand in the band)
+        "f = max(0, min(1, (eta - pos().z())/$[dzBand] + 0.5))"
+        // velocity: harmonics 1-3, then 4-5
+        "u3 = $[U1]*cosh(kb)*cos(kx) + $[U2]*cosh(2*kb)*cos(2*kx) + $[U3]*cosh(3*kb)*cos(3*kx)"
+        "w3 = $[U1]*sinh(kb)*sin(kx) + $[U2]*sinh(2*kb)*sin(2*kx) + $[U3]*sinh(3*kb)*sin(3*kx)"
+        "u = u3 + $[U4]*cosh(4*kb)*cos(4*kx) + $[U5]*cosh(5*kb)*cos(5*kx)"
+        "w = w3 + $[U4]*sinh(4*kb)*sin(4*kx) + $[U5]*sinh(5*kb)*sin(5*kx)"
+    );
+}
+
+expressions
+(
+    alpha
+    {
+        field       alpha.water;
+        $_wave;
+        expression  #{ f #};
+    }
+
+    velocity
+    {
+        field       U;
+        $_wave;
+        // water velocity, also in the crest above z = 0; zero in the air
+        expression  #{ f*vector(u, 0, w) #};
+    }
+);
+
+// ************************************************************************* //

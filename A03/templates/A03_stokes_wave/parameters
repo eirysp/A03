@@ -1,0 +1,61 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     |
+    \\  /    A nd           | Stokes wave in a periodic domain (A03)
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+// Case parameters. Included by the files in system/. Edit here, then bash Allrun.
+//
+// Coordinate system:
+//   x  direction of propagation; the domain is one wavelength long,
+//      0 <= x <= lambda, and periodic (cyclic patches left and right)
+//   z  vertical, upwards; still-water level z = 0, flat bed z = -d
+//   y  the empty (2D) direction
+//
+// At t = 0 the wave has its crest at x = 0 (and x = lambda) and travels in +x.
+// The wave is the fifth-order Stokes wave (Stokes V) of height H and
+// wavelength lambda in depth d, as made by OpenFOAM's StokesV wave model (the
+// wavemaker of A03_beach). Allrun runs python stokesV.py, which computes from
+// these parameters the period T and the initial wave and writes them to the
+// file waveCoeffs (included below; formulas and coefficients in stokesV.py):
+//   eta = sum_n A_n cos(n k x),                   n = 1, ..., 5
+//   u   = sum_n U_n cosh(n k (z + d)) cos(n k x),  w = sum_n U_n sinh(n k (z + d)) sin(n k x)
+// initialWave StokesV:   the Stokes V wave (all five harmonics)
+// initialWave StokesIII: Stokes third-order theory (the same formulas without
+//                        the 4th- and 5th-order terms), same H and lambda
+// initialWave Airy:      linear theory, eta = (H/2) cos(kx), same H and lambda
+// The run time and the output intervals use the Stokes V period T in all three.
+
+// ---- Wave -------------------------------------------------------------------
+lambda      50;     // wavelength [m] = length of the domain
+H           5;      // wave height (crest to trough) [m]: H/lambda = 0.10, 70% of
+                    // the steepest possible wave (H/lambda = 0.142 in deep water)
+d           25;     // water depth [m]: k d = pi, deep water
+initialWave StokesV;    // StokesV, StokesIII or Airy (see above)
+
+// ---- Domain [m] -------------------------------------------------------------
+zTop        12.5;   // top of the domain (air above the water)
+zBand       3.5;    // the surface band -zBand <= z <= zBand has uniform cells
+dy          0.5;    // extent in y (any value: 2D case)
+
+// ---- Mesh -------------------------------------------------------------------
+nx          100;    // cells per wavelength (in x)
+nzBand      28;     // cells across the surface band: dz = 2 zBand / nzBand
+nzBed       12;     // cells from the bed to -zBand (graded, finer upwards)
+nzAir       8;      // cells from zBand to zTop (graded, finer downwards)
+
+// ---- Time -------------------------------------------------------------------
+nPeriods    5;      // run time [wave periods]
+maxCo       0.1;    // maximum Courant number
+writePerPeriod 40;  // fields written per period (40: smooth animations)
+
+// ---- Derived (do not edit) --------------------------------------------------
+g           9.81;
+k           #eval{ 2*pi()/$lambda };
+#include    "waveCoeffs"    // T, A1-A5, U1-U5 (written by stokesV.py)
+endTime     #eval{ $nPeriods*$T };
+writeInterval #eval{ $T/$writePerPeriod };
+dzBand      #eval{ 2*$zBand/$nzBand };
+
+// ************************************************************************* //

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Removes the results of a run: mesh, time folders, processor folders, logs.
+# (find, not shell wildcards: the bash of the OpenFOAM app for macOS can crash
+#  when it expands a wildcard such as processor*)
+cd "$(dirname "$0")" || exit 1
+find . -mindepth 1 -maxdepth 1 \( -name 0 -o -name '[1-9]*' -o -name '0.[0-9]*' \
+     -o -name 'processor*' -o -name 'log.*' -o -name '*.foam' -o -name '*.png' \) \
+     -exec rm -rf {} +
+rm -rf constant/polyMesh postProcessing

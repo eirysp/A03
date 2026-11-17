@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Runs the case in parallel on NP cores (found below).
+cd "$(dirname "$0")" || exit 1
+bash Allclean                                   # start clean
+# Number of cores for the parallel run: by default the number of physical cores
+# of this computer (performance cores on Apple silicon), at most MAXNP.
+# To choose it yourself:   NP=2 bash Allrun   (or NP=2 python scripts/create_and_run_sims.py)
+MAXNP=16
+if [ -z "$NP" ]; then
+    NP=$(sysctl -n hw.perflevel0.physicalcpu 2>/dev/null \
+      || sysctl -n hw.physicalcpu 2>/dev/null \
+      || lscpu -p=CORE,SOCKET 2>/dev/null | grep -v '^#' | sort -u | wc -l)
+    [ "$NP" -ge 1 ] 2>/dev/null || NP=$(nproc 2>/dev/null || echo 1)
+    [ "$NP" -gt "$MAXNP" ] && NP=$MAXNP
+fi
+export NP                                       # read by system/decomposeParDict
+cp -r 0.orig 0                                  # initial fields (0.orig is never changed)
+blockMesh      > log.blockMesh 2>&1 || { echo "blockMesh failed: see log.blockMesh"; exit 1; }
+checkMesh      > log.checkMesh 2>&1
+setExprFields  > log.setExprFields 2>&1 || { echo "setExprFields failed: see log.setExprFields"; exit 1; }
+echo "Running interFoam on $NP core(s) (progress: tail -f log.interFoam) ..."
+# Progress bar (scripts/progress.py of the A03 folder above this case), only
+# when the output goes to a terminal: create_and_run_sims.py draws its own
+BARPID=""
+stopbar() { [ -n "$BARPID" ] && { kill "$BARPID" 2>/dev/null; wait "$BARPID" 2>/dev/null; BARPID=""; }; }
+trap stopbar EXIT                               # also if Allrun stops early
+d=$PWD
+while [ "$d" != "/" ] && [ ! -f "$d/scripts/progress.py" ]; do d=$(dirname "$d"); done
+if [ -t 1 ] && [ -f "$d/scripts/progress.py" ]; then
+    python "$d/scripts/progress.py" --bar . &
+    BARPID=$!
+fi
+if [ "$NP" -gt 1 ]; then
+    decomposePar   > log.decomposePar 2>&1
+    mpirun -np "$NP" interFoam -parallel > log.interFoam 2>&1 || { stopbar; echo "interFoam failed: see log.interFoam"; exit 1; }
+    reconstructPar > log.reconstructPar 2>&1
+    find . -mindepth 1 -maxdepth 1 -name 'processor*' -exec rm -rf {} +   # no wildcard: see Allclean
+else
+    interFoam > log.interFoam 2>&1 || { stopbar; echo "interFoam failed: see log.interFoam"; exit 1; }
+fi
+stopbar                                         # leave the last bar on screen
+touch "$(basename "$PWD").foam"                 # open this file in ParaView
+echo "Done. Free surface: postProcessing/freeSurface/<time>/"

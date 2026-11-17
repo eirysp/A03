@@ -1,0 +1,83 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     |
+    \\  /    A nd           | Waves on a sloping beach (A03)
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+// Case parameters. Included by the files in system/ and constant/waveProperties.
+// Edit here, then bash Allrun.
+//
+// Coordinate system:
+//   x  along the flume: wavemaker at x = 0, toe of the slope at x = xToe
+//   z  vertical, upwards; still-water level z = 0
+//   y  the empty (2D) direction
+//
+//   bed z = -d                          0      <= x <= xToe    flat (deep water)
+//   bed z = -d + (x - xToe) slope       xToe   <= x <= xShelf  the slope
+//   bed z = -dShelf                     xShelf <= x <= xEnd    shallow shelf
+//
+// The waves are made at x = 0 by the boundary conditions waveAlpha and
+// waveVelocity (constant/waveProperties): a fifth-order Stokes wave (StokesV)
+// of period T, given the input height Hpaddle. Over the flat bed the waves are
+// the wave of A03_stokes_wave: height H = 5 m and wavelength 50 m in the depth
+// d = 25 m (T is in templates/A03_stokes_wave/waveCoeffs).
+// The wavemaker also absorbs the waves reflected back to it. The waves break
+// on the slope; what is left of them crosses the shelf and leaves the flume
+// through the absorbing outlet at x = xEnd.
+
+// ---- Wave (as in A03_stokes_wave) --------------------------------------------
+H           5;      // wave height wanted over the flat bed [m] (= A03_stokes_wave)
+Hpaddle     6.75;   // wave height given to the wavemaker [m] (see below)
+T           5.40300; // wave period [s]: the Stokes V wave of height H is 50 m long
+rampPeriods 2;      // the wave height is ramped up over the first rampPeriods periods
+// Why Hpaddle > H: with the input H the waves over the flat bed (x = 50-100 m) are
+// about 19% lower than H, for two reasons:
+//  - OpenFOAM's StokesV wave model finds the Stokes V wavelength (50 m) but
+//    evaluates eta and U at the wavemaker with the linear wavelength (45.5 m),
+//    which makes the wave there about 8% too low;
+//  - the wave loses a further ~12% of its height in the first 75 m from the
+//    wavemaker, then keeps its height (the cause was not identified: not the
+//    Courant number, the active absorption or the wave input).
+// Hpaddle was tuned (by running the case) so that the wave over the flat bed
+// has the height H, as in A03_stokes_wave. Change it if you change H or the mesh.
+
+// ---- Geometry [m] -----------------------------------------------------------
+d           25;     // depth at the wavemaker
+xToe        100;    // toe of the slope
+slope       0.1;    // bed slope dz/dx (1:10)
+dShelf      2.5;    // depth over the shelf, after the slope
+lShelf      30;     // length of the shelf
+zTop        10;     // top of the domain
+dy          0.5;    // extent in y (any value: 2D case)
+
+// ---- Mesh -------------------------------------------------------------------
+// Each column of cells has three parts in z: from the bed to zLow (cells that
+// follow the bed, graded finer upwards), the band zLow <= z <= zHigh in which
+// the free surface moves (uniform cells, dx by dz) and the air above
+// zHigh (graded, finer downwards). The band and the air are the same along the
+// whole flume; only the cells below the band follow the bed.
+dx          0.5;    // cell size in x [m]: lambda/dx = 100 cells per wavelength
+dz          0.25;   // cell size in z in the band [m]: H/dz = 20 cells per wave height
+zLow        -2;     // bottom of the band (above the shelf, -dShelf)
+zHigh       4.5;    // top of the band
+nzBed       12;     // cells from the bed to zLow
+nzAir       6;      // cells from zHigh to zTop
+
+// ---- Time -------------------------------------------------------------------
+endTime     99;     // [s]
+maxCo       0.2;    // maximum Courant number (0.2, not 0.1 as in
+                    // A03_stokes_wave, to keep the run short: see Task 2)
+
+// ---- Derived (do not edit) --------------------------------------------------
+g           9.81;
+rampTime    #eval{ $rampPeriods*$T };
+xShelf      #eval{ $xToe + ($d - $dShelf)/$slope };
+xEnd        #eval{ $xShelf + $lShelf };
+nxFlat      #eval{ round($xToe/$dx) };
+nxSlope     #eval{ round(($xShelf - $xToe)/$dx) };
+nxShelf     #eval{ round($lShelf/$dx) };
+nzBand      #eval{ round(($zHigh - $zLow)/$dz) };
+dzBand      #eval{ ($zHigh - $zLow)/$nzBand };
+
+// ************************************************************************* //
