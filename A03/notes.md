@@ -43,4 +43,14 @@ The velocity magnitude is highest near the free surface, especially just below t
 
 The minimum displayed velocity magnitude was approximately 6.6 × 10^-2 m/s. Since this is the magnitude, it is positive everywhere and does not indicate flow direction.
 
-The horizontal velocity component U_x is positive beneath the crest, indicating flow in the +x direction. Beneath the trough, U_x is negative, indicating flow in the -x direction. This is consistent with the wave-particle motion as the wave propagates in the +x direction.
+The horizontal velocity component Ux is positive beneath the crest, indicating flow in the +x direction. Beneath the trough, U_x is negative, indicating flow in the -x direction. This is consistent with the wave-particle motion as the wave propagates in the +x direction.
+
+### Task 1(b) — ParaView animation
+
+The animation was created in ParaView using the alpha.water field and saved as:
+
+runs/original/stokes_wave/stokes_wave_alpha_from_paraview.avi
+
+The reusable ParaView trace was saved as:
+
+scripts/animate.py
