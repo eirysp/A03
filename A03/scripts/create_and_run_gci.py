@@ -20,7 +20,7 @@ import subprocess
 
 import progress   # scripts/progress.py: the progress bar of each run
 
- ============================================================================
+# ============================================================================
 # EDIT THESE LINES for each study (in your copy of this script):
 #   - study: the folder runs/<study> that the runs go into;
 #   - runs: one line per run, its name and the parameters that it changes.
