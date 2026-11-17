@@ -54,3 +54,48 @@ runs/original/stokes_wave/stokes_wave_alpha_from_paraview.avi
 The reusable ParaView trace was saved as:
 
 scripts/animate.py
+
+### Task 1(c) — CFD and theory comparison
+
+Case parameters:
+- lambda = 50.0 m
+- H = 5.00 m
+- d = 25.0 m
+- kd = 3.142
+- CFD period T = 5.4030 s
+- mesh: nx = 100, dz = 0.250 m
+- maxCo = 0.1
+- run duration: 5 periods
+
+| Quantity | CFD | Stokes V | Stokes III | Airy |
+|---|---:|---:|---:|---:|
+| Phase speed c (m/s) | 9.2640 | 9.2541 | 9.2190 | 8.8190 |
+| Crest elevation (m) | 2.8523 | 2.9322 | 2.8719 | 2.5000 |
+| Trough elevation (m) | -2.0384 | -2.0678 | -2.1281 | -2.5000 |
+| Wave height H (m) | 4.8907 | 5.0000 | 5.0000 | 5.0000 |
+| A1 (m) | 2.3509 | 2.3873 | 2.4147 | 2.5000 |
+| A2 (m) | 0.3871 | 0.4100 | 0.3719 | 0 |
+| A3 (m) | 0.0897 | 0.1062 | 0.0853 | 0 |
+| A4 (m) | 0.0337 | 0.0221 | 0 | 0 |
+| A5 (m) | 0.0137 | 0.0065 | 0 | 0 |
+
+Key values:
+- c = 9.26402 m/s
+- c_V = 9.25412 m/s
+- c_III = 9.21900 m/s
+- c_Airy = 8.81898 m/s
+- H_end = 4.89073 m
+- H_0 = 4.99405 m
+- crest_end = 2.85228 m
+- trough_end = -2.03845 m
+
+Initial-to-final wave-height change:
+- H_0 - H_end = 0.10332 m
+- percentage decrease = approximately 2.07%
+
+Initial observation:
+- The CFD phase speed is closest to Stokes V.
+- Airy theory underestimates the phase speed by approximately 5.05%.
+- The CFD crest is higher and sharper than the Airy crest.
+- The CFD trough is shallower than the Airy trough.
+- The non-zero A2-A5 harmonics show the nonlinear wave shape that Airy theory cannot represent.
